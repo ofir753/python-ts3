@@ -138,6 +138,17 @@ class TS3Proto():
 
         return TS3Response(response.decode('utf-8'), data.decode('utf-8'))
 
+    def send_command_no_response(self, command, keys=None, opts=None):
+        self.check_connection()
+
+        commandstr = self.construct_command(command, keys=keys, opts=opts)
+        self.logger.debug("send_command - %s" % commandstr)
+
+        with self.io_lock:
+            self._telnet.write(commandstr.encode('utf-8') + b"\n\r")
+
+            data = b''
+
     def check_connection(self):
         if not self.is_connected:
             raise NoConnectionError
@@ -178,6 +189,12 @@ class TS3Proto():
                 cstr.append("-%s" % opt)
 
         return " ".join(cstr)
+
+    def wait_for_event_inner(self):
+        response = b''
+        data = self._telnet.read_until(b"\n\r")
+
+        return TS3Response(response.decode('utf-8'), data.decode('utf-8'))
 
     @staticmethod
     def parse_response(response):

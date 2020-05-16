@@ -80,6 +80,11 @@ class TS3Server(TS3Proto):
         response = self.send_command('gm', keys={'msg': msg})
         return response.is_successful
 
+    def text_message(self, client_id, msg):
+
+        response = self.send_command('sendtextmessage', keys={'targetmode': 1, 'target': client_id, 'msg': msg})
+        return response.is_successful
+
     def use(self, id):
         """
         Use a particular Virtual Server instance
@@ -90,12 +95,21 @@ class TS3Server(TS3Proto):
         response = self.send_command('use', keys={'sid': id})
         return response.is_successful
 
-    def clientlist(self):
+    def usePort(self, port):
+        """
+        Use a particular Virtual Server instance
+
+        @param id: Virtual Server ID
+        @type id: int
+        """
+        response = self.send_command('use', keys={'port': port})
+        return response.is_successful
+
+    def clientlist(self, args=[]):
         """
         Returns a clientlist of the current connected server/vhost
         """
-
-        response = self.send_command('clientlist')
+        response = self.send_command('clientlist ' + str(args))
 
         if response.is_successful:
             clientlist = {}
@@ -150,3 +164,10 @@ class TS3Server(TS3Proto):
 
         response = self.send_command('clientpoke', keys={'clid': clid, 'msg': message})
         return response.is_successful
+
+    def wait_for_event(self):
+
+        return self.wait_for_event_inner()
+
+    def __exit__(self):
+    	self.disconnect()
